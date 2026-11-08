@@ -1,0 +1,43 @@
+application:
+  subdomain: upsnap
+  multi_instance: false
+  # No public_path: the web UI can run shutdown/reboot commands on the host
+  # (via shell), upstream explicitly warns NOT to expose UpSnap to the
+  # public internet. PocketBase login alone is not a sufficient boundary
+  # here, so platform entry authentication stays the first line of defense.
+  upstreams:
+    - location: /package-licenses/
+      backend: file:///lzcapp/pkg/content/licenses/
+    - location: /
+      # host network (WOL magic packets must be sent on the LAN directly,
+      # rustdesk/crossdesk precedent): the service listens on :8090 itself.
+      backend: http://host.lzcapp:8090/
+
+services:
+  upsnap:
+    # upstream: seriousm4x/upsnap:5.7.3
+    image: docker.1ms.run/seriousm4x/upsnap:5.7.3
+    network_mode: host
+    environment:
+      - TZ=Asia/Shanghai
+    binds:
+      # PocketBase sqlite db + uploaded icons (official compose mounts /app/pb_data)
+      - /lzcapp/var/mutdata:/app/pb_data
+usage: |
+  UpSnap 是一个局域网设备唤醒（Wake-on-LAN）面板：添加设备后可一键 WOL 唤醒、
+  定时唤醒/关机、ping 存活监控，自带 Web 界面（PocketBase 账号体系）。
+
+  使用方法：
+  1. 打开应用，首次进入是 setup 向导，按提示创建管理员账号（自助完成）。
+  2. 添加设备时填写 MAC 地址（唤醒必需）与 IP/主机名（ping 监控用）。
+  3. 数据（PocketBase sqlite）保存在 /lzcapp/var/mutdata，卸载会一并删除。
+
+  说明：
+  - 本应用使用 host 网络：WOL 魔术包需要直接向局域网广播/单播发送，
+    容器内端口由服务直接监听（8090），不经平台入口转发。
+    请确保目标设备的 BIOS 已开启 Wake-on-LAN，且与本机在同一二层网络。
+  - 界面内可执行关机/重启命令（需要在设备设置里自行配置 ssh 命令），
+    官方明示 UpSnap 不应暴露到公网，因此本包未使用 public_path，
+    由平台入口鉴权保护，请勿再自行将其对外映射。
+  - 本包未做实机验证，功能以官方文档为准：https://github.com/seriousm4x/UpSnap/wiki
+  - 许可证 MIT，随包分发，见 /package-licenses/。

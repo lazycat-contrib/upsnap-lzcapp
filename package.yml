@@ -1,0 +1,18 @@
+package: community.lazycat.app.upsnap
+name: UpSnap
+version: 5.7.3
+description: "Wake-on-LAN dashboard: wake, ping, shutdown and manage devices on your LAN from a web UI."
+min_os_version: "1.5.0"
+homepage: https://github.com/seriousm4x/UpSnap
+author: seriousm4x
+license: MIT
+permissions:
+  required:
+    - net.internet
+locales:
+  zh:
+    name: UpSnap
+    description: "局域网设备唤醒面板：一键 WOL 唤醒、ping 存活检测、定时/远程关机，Web 界面管理。"
+  en:
+    name: UpSnap
+    description: "Wake-on-LAN dashboard with ping monitoring, scheduled shutdown and a web UI."
